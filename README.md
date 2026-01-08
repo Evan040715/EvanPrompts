@@ -1,9 +1,9 @@
 # EvanPrompts
 
-Some sources of inspiration：https://tangdoou.github.io/
+Some sources of inspiration：[Tangdoou's Blog](https://tangdoou.github.io/)
 
 ## 1. 论文速读
-深度解析论文方法、流程细节及复现指南
+解析论文方法、流程细节及复现指南
 
 <details>
 <summary>Show more details</summary>
@@ -68,7 +68,7 @@ Some sources of inspiration：https://tangdoou.github.io/
 ## 2. 论文翻译
 
 **使用说明:**
-*  **替换占位符:** 在实际使用这个 Prompt 时，请务必将 [源语言]、[目标语言]、[学科领域] 和可选的 [目标受众] 替换为具体的信息。学科领域越具体越好。
+*  **替换占位符:** 在实际使用这个 Prompt 时，请务必将 `[源语言]`、`[目标语言]`、`[学科领域]` 和可选的 `[目标受众]` 替换为具体的信息。学科领域越具体越好。
 *  **提供输入文本:** 将需要翻译的文本粘贴到这个 Prompt 之后。
 
 <details>
