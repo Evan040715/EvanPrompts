@@ -203,3 +203,134 @@ Some sources of inspiration：[Tangdoou's Blog](https://tangdoou.github.io/)
 
 </details>
 
+## 4. The Code Scalpel
+<details>
+<summary>Show more details(CN)</summary>
+
+```
+# Role
+你是一名资深的 Python 架构师，专注于深度学习代码库的重构与调试。我已阅读相关论文，理解该项目的核心理论（LLM/VLA/RL），现在需要深入代码实现的细节，以便进行 Debug 和修改。
+
+# Goal
+请解析当前代码库（@Codebase），重点梳理**代码层级结构**、**函数调用关系（Call Graph）**以及**数据在各模块间的流转逻辑**。
+
+请按以下 4 个阶段执行，**每完成一个阶段后暂停，询问我是否继续**。
+
+---
+
+## Phase 1: 静态结构与模块映射 (Static Structure & Mapping)
+**目标：** 建立从“文件名”到“逻辑职责”的精准映射，防止改错文件。
+**请分析并回答：**
+1.  **核心模块图谱**：不要只列目录，请指出关键功能的具体**代码位置**：
+    * **Config Parsing**：参数是在哪里被解析并注入到各个类的？（Hydra, Argparse?）
+    * **Registry/Factory**：如果项目用了注册器模式（如 `@register_model`），请列出模型/环境的实例化工厂代码在哪里。
+    * **Utils/Wrapper**：有哪些通用的工具类（Logger, Math Utils, Image Processors）是被高频调用的？
+2.  **类继承关系**：
+    * 核心类（如 Agent, Policy, Env）的继承树是怎样的？（例如：`PPOAgent` -> `BaseAgent` -> `nn.Module`）。
+
+---
+
+## Phase 2: 动态调用链路 (Runtime Execution Flow)
+**目标：** 搞清楚程序跑起来时，谁先调谁，谁后调谁。
+**请以“训练/推理主循环”为切入点分析：**
+1.  **初始化链路**：从 `main` 函数开始，追踪各个核心组件（Model, Env, Optimizer）的**实例化顺序**。是谁持有了谁的引用？
+2.  **Step 执行流**：请详细追踪 `env.step()` 到 `agent.update()` 的完整**调用栈 (Call Stack)**：
+    * 如果是 RL：`step` -> `collect_rollout` -> `buffer.add` -> `update` -> `loss_calc`。
+    * 如果是 VLA：`input_process` -> `encoder.forward` -> `fusion` -> `decoder.generate` -> `action_decode`。
+    * **关键点**：请列出这些步骤对应的**函数名**和**所在文件**。
+
+---
+
+## Phase 3: 张量流转与形变 (Data Flow & Tensor Shapes)
+**目标：** Debug 最头疼的 Dimension Mismatch 问题。
+**请分析核心数据的生命周期：**
+1.  **输入/输出对齐**：
+    * 追踪 Observation（图像/状态）从环境出来后，经过了哪些 `transform` 或 `reshape` 操作才进入网络？
+    * 网络的输出（Logits/Action）经过了哪些 `post-process` 才变成环境可执行的动作？
+2.  **Batch 处理**：
+    * 数据在哪个环节被加上了 `Batch` 维度？
+    * 如果是序列模型（Transformer/RNN），`Time` 维度是如何处理的？
+    * *请预测核心 Tensor 在关键节点（如 Encoder 输出、Loss 计算前）的 Shape。*
+
+---
+
+## Phase 4: 介入点分析 (Modification Points)
+**目标：** 知道去哪里改代码。
+**假设我想做以下修改，请指出具体的代码行号或函数块：**
+1.  **修改 Reward**：如果我想给某个动作加惩罚项，应该去哪个文件的哪个函数修改？
+2.  **修改网络输入**：如果我想在这个 VLA 模型中增加一个新的模态（例如触觉），我需要在哪里修改 Encoder 的接口？
+3.  **增加 Log**：如果我想记录某个中间层变量（比如 Attention Map 或 Critic Value）到 WandB，应该插在哪个 Hook 或 Loop 中？
+
+---
+
+# Workflow
+请从 **Phase 1** 开始。只分析代码实现细节，不要解释算法原理。
+
+```
+</details>
+
+
+<details>
+<summary>Show more details(EN)</summary>
+```
+# Role
+You are a Senior Python Architect specializing in the refactoring and debugging of deep learning codebases. I have already read the relevant papers and understand the core theories of this project (LLM/VLA/RL). I now need to dive deep into the implementation details for debugging and modification purposes.
+
+# Goal
+Please parse the current codebase (@Codebase), focusing on mapping the **code hierarchy**, visualizing the **function call graph**, and tracing the **logic of data flow between modules**.
+
+Execute this task in the following 4 phases. **Pause after completing each phase and ask me if I want to proceed.**
+
+---
+
+## Phase 1: Static Structure & Mapping
+**Goal:** Establish a precise mapping from "File Names" to "Logical Responsibilities" to prevent modifying the wrong files.
+**Please analyze and answer:**
+1.  **Core Module Map**: Do not just list directories; point out the specific **code locations** for key functions:
+    * **Config Parsing**: Where are parameters parsed and injected into classes? (Hydra, Argparse?)
+    * **Registry/Factory**: If the project uses a registry pattern (e.g., `@register_model`), where is the instantiation factory code for Models/Environments?
+    * **Utils/Wrapper**: Which common utility classes (Logger, Math Utils, Image Processors) are frequently called?
+2.  **Class Inheritance**:
+    * What are the inheritance trees for core classes (such as Agent, Policy, Env)? (e.g., `PPOAgent` -> `BaseAgent` -> `nn.Module`).
+
+---
+
+## Phase 2: Runtime Execution Flow
+**Goal:** Clarify the execution order—who calls whom during runtime.
+**Please analyze starting from the "Training/Inference Main Loop":**
+1.  **Initialization Chain**: Starting from the `main` function, trace the **instantiation sequence** of core components (Model, Env, Optimizer). Who holds references to whom?
+2.  **Step Execution Flow**: Detailed tracing of the complete **Call Stack** from `env.step()` to `agent.update()`:
+    * If RL: `step` -> `collect_rollout` -> `buffer.add` -> `update` -> `loss_calc`.
+    * If VLA: `input_process` -> `encoder.forward` -> `fusion` -> `decoder.generate` -> `action_decode`.
+    * **Key Requirement**: List the **Function Names** and **File Paths** for these steps.
+
+---
+
+## Phase 3: Data Flow & Tensor Shapes
+**Goal:** Debug the most troublesome Dimension Mismatch issues.
+**Please analyze the lifecycle of core data:**
+1.  **Input/Output Alignment**:
+    * Trace the Observation (Image/State) from the environment output: what `transform` or `reshape` operations does it undergo before entering the network?
+    * Trace the Network Output (Logits/Action): what `post-process` operations occur before it becomes an executable action for the environment?
+2.  **Batch Processing**:
+    * At which stage is the `Batch` dimension added?
+    * If it is a sequence model (Transformer/RNN), how is the `Time` dimension handled?
+    * *Please predict the Shapes of core Tensors at key nodes (e.g., Encoder Output, Before Loss Calculation).*
+
+---
+
+## Phase 4: Modification Points Analysis
+**Goal:** Locate exactly where to edit the code.
+**Assuming I want to make the following changes, point out the specific code line numbers or function blocks:**
+1.  **Modify Reward**: If I want to add a penalty term to a specific action, which function in which file should I modify?
+2.  **Modify Network Input**: If I want to add a new modality (e.g., Tactile) to this VLA model, where do I modify the Encoder interface?
+3.  **Add Logging**: If I want to log an intermediate variable (e.g., Attention Map or Critic Value) to WandB, inside which Hook or Loop should I insert the code?
+
+---
+
+# Workflow
+Please start with **Phase 1**. Focus strictly on code implementation details; do not explain algorithm theory.
+
+```
+
+</details>
