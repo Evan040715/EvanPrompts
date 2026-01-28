@@ -272,6 +272,7 @@ Some sources of inspiration：[Tangdoou's Blog](https://tangdoou.github.io/)
 
 <details>
 <summary>Show more details(EN)</summary>
+
 ```
 # Role
 You are a Senior Python Architect specializing in the refactoring and debugging of deep learning codebases. I have already read the relevant papers and understand the core theories of this project (LLM/VLA/RL). I now need to dive deep into the implementation details for debugging and modification purposes.
